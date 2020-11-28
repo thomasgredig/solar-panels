@@ -1,0 +1,57 @@
+---
+title: "report.SolarPanels"
+author: "Thomas Gredig"
+date: "11/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+## Solar Panel Performance
+
+Loading the data ....
+```{r}
+path = 'data'
+file.list=dir(path,pattern='csv$')
+r = data.frame()
+for(f in file.list) {
+  filename = file.path(path,f)
+  d = read.csv(filename)
+  r = rbind(r,d)
+}
+```
+
+Found `r nrow(r)` data points.
+
+Separating date and times ...
+```{r}
+r$day = as.Date(substr(r$Date.time, 1, 10))
+r$time = as.numeric(substr(r$Date.time, 12,13))*100 + as.numeric(substr(r$Date.time, 15,16))/60*100
+```
+
+Graphing data for different days:
+```{r}
+ggplot(r, aes(time/100, Solar..kW., color=as.factor(day))) +
+  geom_line(size=1, alpha=0.7) + 
+  scale_x_continuous(limits=c(6, 18), 
+                     breaks=6:18) +
+  theme_bw()
+```
+
+
+## Difference in Days
+
+Computing difference in output between two dates ...
+```{r}
+r %>% 
+  filter(day=='2020-11-22' | day=='2020-11-27') %>%
+  ggplot(aes(time/100, Solar..kW., color=as.factor(day))) +
+  geom_line(size=1, alpha=0.7) + 
+  scale_x_continuous(limits=c(6, 18), 
+                     breaks=6:18) +
+  theme_bw()
+```
